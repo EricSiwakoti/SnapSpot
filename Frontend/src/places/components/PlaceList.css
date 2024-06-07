@@ -5,3 +5,7 @@
   width: 90%;
   max-width: 40rem;
 }
+
+.place-list__padding {
+  padding: 1.5rem;
+}
