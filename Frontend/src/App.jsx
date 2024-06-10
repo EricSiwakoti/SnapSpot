@@ -1,37 +1,43 @@
-import React from "react";
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  Navigate,
-} from "react-router-dom";
-
+import { useState, useCallback } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Users from "./user/pages/Users";
-import NewPlace from "./places/pages/NewPlace";
 import UserPlaces from "./places/pages/UserPlaces";
+import NewPlace from "./places/pages/NewPlace";
 import UpdatePlace from "./places/pages/UpdatePlace";
 import Auth from "./user/pages/Auth";
 import MainNavigation from "./shared/components/Navigation/MainNavigation";
-
-const RoutesComponent = () => {
-  return (
-    <Routes>
-      <Route path="/" element={<Users />} exact />
-      <Route path="/:userId/places" element={<UserPlaces />} exact />
-      <Route path="/places/new" element={<NewPlace />} exact />
-      <Route path="/places/:placeId" element={<UpdatePlace />} />
-      <Route path="/auth" element={<Auth />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
-};
+import { AuthContext } from "./shared/context/auth-context";
 
 const App = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const login = useCallback(() => {
+    setIsLoggedIn(true);
+  }, []);
+
+  const logout = useCallback(() => {
+    setIsLoggedIn(false);
+  }, []);
+
   return (
-    <Router>
+    <AuthContext.Provider
+      value={{ isLoggedIn: isLoggedIn, login: login, logout: logout }}
+    >
       <MainNavigation />
-      <RoutesComponent />
-    </Router>
+      <Routes>
+        <Route path="/" element={<Users />} />
+        <Route path="/:userId/places" element={<UserPlaces />} />
+        {isLoggedIn && <Route path="/places/new" element={<NewPlace />} />}
+        {isLoggedIn && (
+          <Route path="/places/:placeId" element={<UpdatePlace />} />
+        )}
+        <Route path="/auth" element={<Auth />} />
+        <Route
+          path="*"
+          element={<Navigate to={isLoggedIn ? "/" : "/auth"} replace />}
+        />
+      </Routes>
+    </AuthContext.Provider>
   );
 };
 
