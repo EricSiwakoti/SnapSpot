@@ -60,7 +60,7 @@ const UpdatePlace = () => {
   const identifiedPlace = DUMMY_PLACES.find((p) => p.id === placeId);
 
   useEffect(() => {
-    if (!identifiedPlace) {
+    if (identifiedPlace) {
       setFormData(
         {
           title: {
@@ -80,7 +80,15 @@ const UpdatePlace = () => {
 
   const placeUpdateSubmitHandler = (event) => {
     event.preventDefault();
-    console.log(formState.inputs);
+    if (
+      formState.inputs &&
+      formState.inputs.title &&
+      formState.inputs.description
+    ) {
+      console.log(formState.inputs);
+    } else {
+      console.log("Form state is not initialized correctly");
+    }
   };
 
   if (!identifiedPlace) {
