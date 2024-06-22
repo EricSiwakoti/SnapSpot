@@ -33,13 +33,22 @@ const DUMMY_PLACES: Place[] = [
 router.get("/:pid", (req: Request, res: Response, next: NextFunction) => {
   const placeId = req.params.pid;
   const place = DUMMY_PLACES.find((p) => p.id === placeId);
+
+  if (!place) {
+    const error = new Error("Could not find a place for the provided id.");
+    return next(error);
+  }
   res.json({ place });
 });
 
 router.get("/user/:uid", (req: Request, res: Response, next: NextFunction) => {
   const userId = req.params.uid;
-  const places = DUMMY_PLACES.filter((p) => p.creator === userId);
-  res.json({ places });
+  const place = DUMMY_PLACES.find((p) => p.creator === userId);
+
+  if (!place) {
+    return next(new Error("Could not find places for the provided user id."));
+  }
+  res.json({ place });
 });
 
 export default router;
