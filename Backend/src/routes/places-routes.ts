@@ -1,4 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
+import { HttpError } from "../models/http-error";
 
 interface Location {
   lat: number;
@@ -35,8 +36,7 @@ router.get("/:pid", (req: Request, res: Response, next: NextFunction) => {
   const place = DUMMY_PLACES.find((p) => p.id === placeId);
 
   if (!place) {
-    const error = new Error("Could not find a place for the provided id.");
-    return next(error);
+    throw new HttpError("Could not find a place for the provided id.", 404);
   }
   res.json({ place });
 });
@@ -46,7 +46,9 @@ router.get("/user/:uid", (req: Request, res: Response, next: NextFunction) => {
   const place = DUMMY_PLACES.find((p) => p.creator === userId);
 
   if (!place) {
-    return next(new Error("Could not find places for the provided user id."));
+    return next(
+      new HttpError("Could not find a place for the provided user id.", 404)
+    );
   }
   res.json({ place });
 });
