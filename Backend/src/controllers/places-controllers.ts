@@ -1,6 +1,7 @@
 import HttpError from "../models/http-error";
 import { Request, Response, NextFunction } from "express";
 import { v4 as uuid } from "uuid";
+import { validationResult } from "express-validator";
 
 interface Location {
   lat: number;
@@ -61,6 +62,12 @@ const getPlaceByUserId = (req: Request, res: Response, next: NextFunction) => {
 };
 
 const createPlace = (req: Request, res: Response, next: NextFunction) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(
+      new HttpError("Invalid inputs passed, please check your data.", 422)
+    );
+  }
   const { title, description, coordinates, address, creator } = req.body;
 
   const createdPlace: Place = {
@@ -78,6 +85,12 @@ const createPlace = (req: Request, res: Response, next: NextFunction) => {
 };
 
 const updatePlace = (req: Request, res: Response, next: NextFunction) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(
+      new HttpError("Invalid inputs passed, please check your data.", 422)
+    );
+  }
   const { title, description } = req.body;
   const placeId = req.params.pid;
 
@@ -96,6 +109,9 @@ const updatePlace = (req: Request, res: Response, next: NextFunction) => {
 
 const deletePlace = (req: Request, res: Response, next: NextFunction) => {
   const placeId = req.params.pid;
+  if (!DUMMY_PLACES.find((p) => p.id === placeId)) {
+    return next(new HttpError("Could not find a place for that id.", 404));
+  }
   DUMMY_PLACES = DUMMY_PLACES.filter((p) => p.id !== placeId);
   res.status(200).json({ message: "Deleted place." });
 };
