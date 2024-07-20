@@ -1,6 +1,5 @@
 import express from "express";
-
-const placesControllers = require("../controllers/places-controllers");
+import * as placesControllers from "../controllers/places-controllers";
 
 const router = express.Router();
 
