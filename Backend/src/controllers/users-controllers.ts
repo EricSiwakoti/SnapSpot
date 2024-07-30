@@ -1,30 +1,9 @@
 import { validationResult } from "express-validator";
 import { Request, Response, NextFunction } from "express";
-import { v4 as uuid } from "uuid";
 import HttpError from "../models/http-error";
 import User from "../models/user";
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  password: string;
-}
-
-const DUMMY_USERS: User[] = [
-  {
-    id: "u1",
-    name: "Eric Siwakoti",
-    email: "test@test.com",
-    password: "testers",
-  },
-];
-
-export const getUsers = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const getUsers = async (req: Request, res: Response, next: NextFunction) => {
   let users;
   try {
     users = await User.find({}, "-password");
@@ -36,11 +15,7 @@ export const getUsers = async (
   res.json({ users: users.map((user) => user.toObject({ getters: true })) });
 };
 
-export const signup = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const signup = async (req: Request, res: Response, next: NextFunction) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     throw new HttpError("Invalid inputs passed, please check your data.", 422);
@@ -81,11 +56,7 @@ export const signup = async (
   res.status(201).json({ user: createdUser.toObject({ getters: true }) });
 };
 
-export const login = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const login = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
 
   let identifiedUser;
@@ -105,6 +76,7 @@ export const login = async (
 
   res.json({
     message: "Logged in!",
-    user: identifiedUser.toObject({ getters: true }),
   });
 };
+
+export { getUsers, signup, login };
