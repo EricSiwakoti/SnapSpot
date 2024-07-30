@@ -11,7 +11,7 @@ interface IPlace {
   image: string;
   address: string;
   location: ILocation;
-  creator: string;
+  creator: mongoose.Schema.Types.ObjectId;
 }
 
 const placeSchema = new mongoose.Schema<IPlace>({
@@ -23,7 +23,11 @@ const placeSchema = new mongoose.Schema<IPlace>({
     lat: { type: Number, required: true },
     lng: { type: Number, required: true },
   },
-  creator: { type: String, required: true },
+  creator: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "User",
+  },
 });
 
 const Place = mongoose.model<IPlace>("Place", placeSchema);
