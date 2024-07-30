@@ -25,12 +25,9 @@ async function getCoordsForAddress(address: string): Promise<Coordinates> {
     throw error;
   }
 
-  const coordinates = data.results[0].geometry;
+  const coordinates = data.results[0].geometry.location;
 
-  return {
-    lat: coordinates.lat,
-    lng: coordinates.lng,
-  };
+  return coordinates;
 }
 
 export default getCoordsForAddress;
