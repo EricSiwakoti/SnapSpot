@@ -1,5 +1,5 @@
-import { validationResult } from "express-validator";
 import { Request, Response, NextFunction } from "express";
+import { validationResult } from "express-validator";
 import HttpError from "../models/http-error";
 import User from "../models/user";
 
@@ -40,7 +40,7 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
   const createdUser = new User({
     name,
     email,
-    image: "https://www.w3schools.com/howto/img_avatar.png",
+    image: req.file ? req.file.path : undefined,
     password,
     places: [],
   });
