@@ -1,6 +1,6 @@
-import HttpError from "../models/http-error";
 import { Request, Response, NextFunction } from "express";
-import { v4 as uuid } from "uuid";
+import HttpError from "../models/http-error";
+import fs from "fs";
 import { validationResult } from "express-validator";
 import getCoordsForAddress from "../util/location";
 import mongoose from "mongoose";
@@ -80,8 +80,7 @@ const createPlace = async (req: Request, res: Response, next: NextFunction) => {
     description,
     address,
     location: coordinates,
-    image:
-      "https://www.pilotguides.com/wp-content/uploads/2022/02/28490681137_f958401de3_c-799x445.jpg",
+    image: req.file ? req.file.path : undefined,
     creator,
   });
 
@@ -165,6 +164,8 @@ const deletePlace = async (req: Request, res: Response, next: NextFunction) => {
     return next(new HttpError("Could not find place for this id.", 404));
   }
 
+  const imagePath = place.image;
+
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
@@ -185,6 +186,11 @@ const deletePlace = async (req: Request, res: Response, next: NextFunction) => {
       new HttpError("Something went wrong, could not delete place.", 500)
     );
   }
+
+  fs.unlink(imagePath, (err) => {
+    console.log(err);
+  });
+
   res.status(200).json({ message: "Deleted place." });
 };
 
