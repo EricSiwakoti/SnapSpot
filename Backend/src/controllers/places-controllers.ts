@@ -66,7 +66,7 @@ const createPlace = async (req: Request, res: Response, next: NextFunction) => {
       new HttpError("Invalid inputs passed, please check your data.", 422)
     );
   }
-  const { title, description, address, creator } = req.body;
+  const { title, description, address } = req.body;
 
   let coordinates;
   try {
@@ -81,12 +81,12 @@ const createPlace = async (req: Request, res: Response, next: NextFunction) => {
     address,
     location: coordinates,
     image: req.file ? req.file.path : undefined,
-    creator,
+    creator: req.userData ? req.userData.userId : undefined,
   });
 
   let user;
   try {
-    user = await User.findById(creator);
+    user = await User.findById(req.userData ? req.userData.userId : undefined);
   } catch (error) {
     return next(new HttpError("Creating place failed, please try again.", 500));
   }
@@ -94,16 +94,18 @@ const createPlace = async (req: Request, res: Response, next: NextFunction) => {
   if (!user) {
     return next(new HttpError("Could not find user for provided id.", 404));
   }
-
+  let sess;
   try {
-    const sess = await mongoose.startSession();
+    sess = await mongoose.startSession();
     sess.startTransaction();
     await createdPlace.save({ session: sess });
-    // @ts-ignore
-    user.places.push(createdPlace);
+    user.places.push(createdPlace._id as any);
     await user.save({ session: sess });
     await sess.commitTransaction();
   } catch (error) {
+    if (sess) {
+      await sess.abortTransaction();
+    }
     return next(new HttpError("Creating place failed, please try again.", 500));
   }
 
@@ -132,6 +134,16 @@ const updatePlace = async (req: Request, res: Response, next: NextFunction) => {
     return next(
       new HttpError("Something went wrong, could not update place.", 500)
     );
+  }
+
+  let userIdCheck;
+  userIdCheck = req.userData ? req.userData.userId : undefined;
+  if (!userIdCheck) {
+    return next(new HttpError("User not authenticated.", 401));
+  }
+
+  if (place.creator.toString() !== userIdCheck) {
+    return next(new HttpError("You are not allowed to edit this place.", 401));
   }
 
   place.title = title;
@@ -164,7 +176,13 @@ const deletePlace = async (req: Request, res: Response, next: NextFunction) => {
     return next(new HttpError("Could not find place for this id.", 404));
   }
 
-  if (place.creator.id !== req.userData.userId) {
+  let userIdCheck;
+  userIdCheck = req.userData ? req.userData.userId : undefined;
+  if (!userIdCheck) {
+    return next(new HttpError("User not authenticated.", 401));
+  }
+
+  if (place.creator.id !== userIdCheck) {
     return next(
       new HttpError("You are not allowed to delete this place.", 401)
     );
