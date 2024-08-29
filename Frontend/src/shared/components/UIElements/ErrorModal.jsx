@@ -1,4 +1,3 @@
-import React from "react";
 import Modal from "./Modal";
 import Button from "../FormElements/Button";
 
@@ -14,3 +13,5 @@ const ErrorModal = (props) => {
     </Modal>
   );
 };
+
+export default ErrorModal;
