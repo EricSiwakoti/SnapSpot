@@ -2,12 +2,13 @@ import express from "express";
 import * as placesControllers from "../controllers/places-controllers";
 import { check } from "express-validator";
 import fileUpload from "../middleware/file-upload";
+import authMiddleware from "../middleware/check-auth";
 
 const router = express.Router();
 
 router.get("/:pid", placesControllers.getPlaceById);
-
 router.get("/user/:uid", placesControllers.getPlaceByUserId);
+router.use(authMiddleware);
 
 router.post(
   "/",
