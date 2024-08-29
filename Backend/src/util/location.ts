@@ -1,7 +1,7 @@
 import axios from "axios";
 import HttpError from "../models/http-error";
 
-const OPEN_CAGE_API_KEY: string = "your-api-key";
+const OPEN_CAGE_API_KEY: string = process.env.OPEN_CAGE_API_KEY!;
 
 interface Coordinates {
   lat: number;
