@@ -22,7 +22,7 @@ const authMiddleware = (
 
     const decodedToken = jwt.verify(
       token,
-      "supersecret_dont_share"
+      process.env.JWT_KEY as string
     ) as jwt.JwtPayload;
     req.userData = { userId: decodedToken.userId as string };
     next();
