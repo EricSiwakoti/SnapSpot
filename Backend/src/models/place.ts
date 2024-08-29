@@ -5,13 +5,18 @@ interface ILocation {
   lng: number;
 }
 
+interface Creator {
+  id: string;
+  creator: mongoose.Schema.Types.ObjectId;
+}
+
 interface IPlace {
   title: string;
   description: string;
   image: string;
   address: string;
   location: ILocation;
-  creator: mongoose.Schema.Types.ObjectId;
+  creator: Creator;
 }
 
 const placeSchema = new mongoose.Schema<IPlace>({
