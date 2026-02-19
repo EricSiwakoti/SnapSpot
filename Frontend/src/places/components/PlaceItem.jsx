@@ -5,7 +5,8 @@ import Modal from "../../shared/components/UIElements/Modal";
 import ViewMap from "../../shared/components/UIElements/Map";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
-import { useHttpClient } from "../../shared/hooks/http-hook";
+// ✅ Import API_BASE along with the hook
+import { useHttpClient, API_BASE } from "../../shared/hooks/http-hook";
 import { AuthContext } from "../../shared/context/auth-context";
 import "./PlaceItem.css";
 
@@ -28,14 +29,10 @@ const PlaceItem = (props) => {
   const confirmDeleteHandler = async () => {
     setShowConfirmModal(false);
     try {
-      await sendRequest(
-        process.env.REACT_APP_BACKEND_URL + `/places/${props.id}`,
-        "DELETE",
-        null,
-        {
-          Authorization: `Bearer ${auth.token}`,
-        }
-      );
+      // ✅ Use API_BASE constant for dynamic endpoint
+      await sendRequest(`${API_BASE}/places/${props.id}`, "DELETE", null, {
+        Authorization: `Bearer ${auth.token}`,
+      });
       props.onDelete(props.id);
     } catch (err) {
       console.log(err);
@@ -85,7 +82,7 @@ const PlaceItem = (props) => {
           {isLoading && <LoadingSpinner asOverlay />}
           <div className="place-item__image">
             <img
-              src={`${process.env.REACT_APP_ASSET_URL}/${props.image}`}
+              src={`${import.meta.env.VITE_ASSET_URL}/${props.image}`}
               alt={props.title}
             />
           </div>

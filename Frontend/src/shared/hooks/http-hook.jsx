@@ -1,5 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 
+// For API endpoints (works in dev + prod)
+export const API_BASE = import.meta.env.VITE_API_BASE || "/api";
+
 export const useHttpClient = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
@@ -23,7 +26,7 @@ export const useHttpClient = () => {
         const responseData = await response.json();
 
         activeHttpRequests.current = activeHttpRequests.current.filter(
-          (reqCtrl) => reqCtrl !== httpAbortCtrl
+          (reqCtrl) => reqCtrl !== httpAbortCtrl,
         );
 
         if (!response.ok) {
@@ -38,7 +41,7 @@ export const useHttpClient = () => {
         throw err;
       }
     },
-    []
+    [],
   );
 
   const clearError = () => {

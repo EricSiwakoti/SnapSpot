@@ -12,7 +12,8 @@ import {
 } from "../../shared/util/Validators";
 import { useForm } from "../../shared/hooks/form-hook";
 import { AuthContext } from "../../shared/context/auth-context";
-import { useHttpClient } from "../../shared/hooks/http-hook";
+// ✅ Import API_BASE along with the hook
+import { useHttpClient, API_BASE } from "../../shared/hooks/http-hook";
 import "./Auth.css";
 
 const Auth = () => {
@@ -31,7 +32,7 @@ const Auth = () => {
         isValid: false,
       },
     },
-    false
+    false,
   );
 
   const switchModeHandler = () => {
@@ -42,7 +43,7 @@ const Auth = () => {
           name: undefined,
           image: undefined,
         },
-        formState.inputs.email.isValid && formState.inputs.password.isValid
+        formState.inputs.email.isValid && formState.inputs.password.isValid,
       );
     } else {
       setFormData(
@@ -57,7 +58,7 @@ const Auth = () => {
             isValid: false,
           },
         },
-        false
+        false,
       );
     }
     setIsLoginMode((prevMode) => !prevMode);
@@ -68,8 +69,9 @@ const Auth = () => {
 
     if (isLoginMode) {
       try {
+        // ✅ Use API_BASE for login endpoint
         const responseData = await sendRequest(
-          process.env.REACT_APP_BACKEND_URL + "/users/login",
+          `${API_BASE}/users/login`,
           "POST",
           JSON.stringify({
             email: formState.inputs.email.value,
@@ -77,7 +79,7 @@ const Auth = () => {
           }),
           {
             "Content-Type": "application/json",
-          }
+          },
         );
         auth.login(responseData.userId, responseData.token);
       } catch (err) {
@@ -90,10 +92,12 @@ const Auth = () => {
         formData.append("name", formState.inputs.name.value);
         formData.append("password", formState.inputs.password.value);
         formData.append("image", formState.inputs.image.value);
+        // ✅ Use API_BASE for signup endpoint
         const responseData = await sendRequest(
-          process.env.REACT_APP_BACKEND_URL + "/users/signup",
+          `${API_BASE}/users/signup`,
           "POST",
-          formData
+          formData,
+          // ✅ No Content-Type header for FormData - browser handles it
         );
         auth.login(responseData.userId, responseData.token);
       } catch (err) {

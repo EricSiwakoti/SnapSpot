@@ -10,8 +10,9 @@ import {
   VALIDATOR_MINLENGTH,
 } from "../../shared/util/Validators";
 import { useForm } from "../../shared/hooks/form-hook";
-import { useHttpClient } from "../../shared/hooks/http-hook";
 import { AuthContext } from "../../shared/context/auth-context";
+// ✅ Import API_BASE along with the hook
+import { useHttpClient, API_BASE } from "../../shared/hooks/http-hook";
 import "./PlaceForm.css";
 
 const UpdatePlace = () => {
@@ -32,15 +33,14 @@ const UpdatePlace = () => {
         isValid: false,
       },
     },
-    false
+    false,
   );
 
   useEffect(() => {
     const fetchPlace = async () => {
       try {
-        const responseData = await sendRequest(
-          `${process.env.REACT_APP_BACKEND_URL}/places/${placeId}`
-        );
+        // ✅ Use API_BASE for GET request
+        const responseData = await sendRequest(`${API_BASE}/places/${placeId}`);
         setLoadedPlace(responseData.place);
         setFormData(
           {
@@ -53,7 +53,7 @@ const UpdatePlace = () => {
               isValid: true,
             },
           },
-          true
+          true,
         );
       } catch (err) {
         console.log(err);
@@ -65,8 +65,9 @@ const UpdatePlace = () => {
   const placeUpdateSubmitHandler = async (event) => {
     event.preventDefault();
     try {
+      // ✅ Use API_BASE for PATCH request
       await sendRequest(
-        `${process.env.REACT_APP_BACKEND_URL}/places/${placeId}`,
+        `${API_BASE}/places/${placeId}`,
         "PATCH",
         JSON.stringify({
           title: formState.inputs.title.value,
@@ -75,7 +76,7 @@ const UpdatePlace = () => {
         {
           "Content-Type": "application/json",
           Authorization: `Bearer ${auth.token}`,
-        }
+        },
       );
       navigate(`/${auth.userId}/places`);
     } catch (err) {

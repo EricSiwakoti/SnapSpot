@@ -10,8 +10,9 @@ import {
   VALIDATOR_MINLENGTH,
 } from "../../shared/util/Validators";
 import { useForm } from "../../shared/hooks/form-hook";
-import { useHttpClient } from "../../shared/hooks/http-hook";
 import { AuthContext } from "../../shared/context/auth-context";
+// ✅ Import API_BASE along with the hook
+import { useHttpClient, API_BASE } from "../../shared/hooks/http-hook";
 import "./PlaceForm.css";
 
 const NewPlace = () => {
@@ -36,7 +37,7 @@ const NewPlace = () => {
         isValid: false,
       },
     },
-    false
+    false,
   );
 
   const navigate = useNavigate();
@@ -50,14 +51,12 @@ const NewPlace = () => {
       formData.append("address", formState.inputs.address.value);
       formData.append("creator", auth.userId);
       formData.append("image", formState.inputs.image.value);
-      await sendRequest(
-        process.env.REACT_APP_BACKEND_URL + "/places",
-        "POST",
-        formData,
-        {
-          Authorization: "Bearer " + auth.token,
-        }
-      );
+
+      // ✅ Use API_BASE constant for dynamic endpoint
+      await sendRequest(`${API_BASE}/places`, "POST", formData, {
+        Authorization: "Bearer " + auth.token,
+        // ✅ No Content-Type header needed for FormData
+      });
       navigate("/");
     } catch (err) {
       console.log(err);
