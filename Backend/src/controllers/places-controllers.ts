@@ -7,10 +7,34 @@ import mongoose from "mongoose";
 import Place from "../models/place";
 import User from "../models/user";
 
+const getPlaces = async (req: Request, res: Response, next: NextFunction) => {
+  let places;
+  try {
+    const searchQuery = req.query.search as string;
+
+    if (searchQuery) {
+      // Case-insensitive regex search on title or address
+      places = await Place.find({
+        $or: [
+          { title: { $regex: searchQuery, $options: "i" } },
+          { address: { $regex: searchQuery, $options: "i" } },
+        ],
+      });
+    } else {
+      places = await Place.find();
+    }
+  } catch (error) {
+    return next(
+      new HttpError("Something went wrong, could not find places.", 500),
+    );
+  }
+  res.json({ places: places.map((p) => p.toObject({ getters: true })) });
+};
+
 const getPlaceById = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const placeId = req.params.pid;
 
@@ -19,7 +43,7 @@ const getPlaceById = async (
     place = await Place.findById(placeId);
   } catch (error) {
     return next(
-      new HttpError("Something went wrong, could not find a place.", 500)
+      new HttpError("Something went wrong, could not find a place.", 500),
     );
   }
 
@@ -33,7 +57,7 @@ const getPlaceById = async (
 const getPlaceByUserId = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const userId = req.params.uid;
 
@@ -42,19 +66,19 @@ const getPlaceByUserId = async (
     userWithPlaces = await User.findById(userId).populate("places");
   } catch (error) {
     return next(
-      new HttpError("Fetching places failed, please try again later.", 500)
+      new HttpError("Fetching places failed, please try again later.", 500),
     );
   }
 
   if (!userWithPlaces || userWithPlaces.places.length === 0) {
     return next(
-      new HttpError("Could not find a place for the provided user id.", 404)
+      new HttpError("Could not find a place for the provided user id.", 404),
     );
   }
 
   res.json({
     places: userWithPlaces.places.map((place) =>
-      (place as any).toObject({ getters: true })
+      (place as any).toObject({ getters: true }),
     ),
   });
 };
@@ -63,7 +87,7 @@ const createPlace = async (req: Request, res: Response, next: NextFunction) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next(
-      new HttpError("Invalid inputs passed, please check your data.", 422)
+      new HttpError("Invalid inputs passed, please check your data.", 422),
     );
   }
   const { title, description, address } = req.body;
@@ -116,7 +140,7 @@ const updatePlace = async (req: Request, res: Response, next: NextFunction) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next(
-      new HttpError("Invalid inputs passed, please check your data.", 422)
+      new HttpError("Invalid inputs passed, please check your data.", 422),
     );
   }
   const { title, description } = req.body;
@@ -127,12 +151,12 @@ const updatePlace = async (req: Request, res: Response, next: NextFunction) => {
     place = await Place.findById(placeId);
     if (!place) {
       return next(
-        new HttpError("Could not find a place for the provided id.", 404)
+        new HttpError("Could not find a place for the provided id.", 404),
       );
     }
   } catch (error) {
     return next(
-      new HttpError("Something went wrong, could not update place.", 500)
+      new HttpError("Something went wrong, could not update place.", 500),
     );
   }
 
@@ -153,7 +177,7 @@ const updatePlace = async (req: Request, res: Response, next: NextFunction) => {
     await place.save();
   } catch (error) {
     return next(
-      new HttpError("Something went wrong, could not update place.", 500)
+      new HttpError("Something went wrong, could not update place.", 500),
     );
   }
 
@@ -168,7 +192,7 @@ const deletePlace = async (req: Request, res: Response, next: NextFunction) => {
     place = await Place.findById(placeId).populate("creator");
   } catch (error) {
     return next(
-      new HttpError("Something went wrong, could not delete place.", 500)
+      new HttpError("Something went wrong, could not delete place.", 500),
     );
   }
 
@@ -184,7 +208,7 @@ const deletePlace = async (req: Request, res: Response, next: NextFunction) => {
 
   if (place.creator.id !== userIdCheck) {
     return next(
-      new HttpError("You are not allowed to delete this place.", 401)
+      new HttpError("You are not allowed to delete this place.", 401),
     );
   }
 
@@ -207,7 +231,7 @@ const deletePlace = async (req: Request, res: Response, next: NextFunction) => {
     }
   } catch (error) {
     return next(
-      new HttpError("Something went wrong, could not delete place.", 500)
+      new HttpError("Something went wrong, could not delete place.", 500),
     );
   }
 
@@ -219,6 +243,7 @@ const deletePlace = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 export {
+  getPlaces,
   getPlaceById,
   getPlaceByUserId,
   createPlace,

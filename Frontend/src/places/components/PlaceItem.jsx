@@ -5,7 +5,6 @@ import Modal from "../../shared/components/UIElements/Modal";
 import ViewMap from "../../shared/components/UIElements/Map";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
-// ✅ Import API_BASE along with the hook
 import { useHttpClient, API_BASE } from "../../shared/hooks/http-hook";
 import { AuthContext } from "../../shared/context/auth-context";
 import "./PlaceItem.css";
@@ -29,7 +28,6 @@ const PlaceItem = (props) => {
   const confirmDeleteHandler = async () => {
     setShowConfirmModal(false);
     try {
-      // ✅ Use API_BASE constant for dynamic endpoint
       await sendRequest(`${API_BASE}/places/${props.id}`, "DELETE", null, {
         Authorization: `Bearer ${auth.token}`,
       });
@@ -81,10 +79,7 @@ const PlaceItem = (props) => {
         <Card className="place-item__content">
           {isLoading && <LoadingSpinner asOverlay />}
           <div className="place-item__image">
-            <img
-              src={`${import.meta.env.VITE_ASSET_URL}/${props.image}`}
-              alt={props.title}
-            />
+            <img src={props.image} alt={props.title} />
           </div>
           <div className="place-item__info">
             <h2>{props.title}</h2>

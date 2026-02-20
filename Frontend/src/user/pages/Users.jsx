@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import UsersList from "../components/UsersList";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
-// ✅ Import API_BASE along with the hook
 import { useHttpClient, API_BASE } from "../../shared/hooks/http-hook";
 
 const Users = () => {
@@ -12,9 +11,7 @@ const Users = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        // ✅ Use API_BASE constant for dynamic endpoint
         const responseData = await sendRequest(`${API_BASE}/users`);
-
         setLoadedUsers(responseData.users);
       } catch (err) {
         console.log(err);

@@ -11,8 +11,11 @@ const NavLinks = () => {
     <ul className="nav-links">
       <li>
         <NavLink to="/" exact>
-          ALL USERS
+          ALL PLACES
         </NavLink>
+      </li>
+      <li>
+        <NavLink to="/users">ALL USERS</NavLink>
       </li>
       {auth.isLoggedIn && (
         <li>

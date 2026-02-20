@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import Input from "../../shared/components/FormElements/Input";
 import Button from "../../shared/components/FormElements/Button";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
@@ -11,7 +12,6 @@ import {
 } from "../../shared/util/Validators";
 import { useForm } from "../../shared/hooks/form-hook";
 import { AuthContext } from "../../shared/context/auth-context";
-// ✅ Import API_BASE along with the hook
 import { useHttpClient, API_BASE } from "../../shared/hooks/http-hook";
 import "./PlaceForm.css";
 
@@ -52,11 +52,10 @@ const NewPlace = () => {
       formData.append("creator", auth.userId);
       formData.append("image", formState.inputs.image.value);
 
-      // ✅ Use API_BASE constant for dynamic endpoint
       await sendRequest(`${API_BASE}/places`, "POST", formData, {
         Authorization: "Bearer " + auth.token,
-        // ✅ No Content-Type header needed for FormData
       });
+      toast.success("Place created successfully!");
       navigate("/");
     } catch (err) {
       console.log(err);

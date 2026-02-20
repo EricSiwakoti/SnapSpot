@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import PlaceList from "../components/PlaceList";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
-// ✅ Import API_BASE along with the hook
 import { useHttpClient, API_BASE } from "../../shared/hooks/http-hook";
 
 const UserPlaces = () => {
@@ -15,7 +14,6 @@ const UserPlaces = () => {
   useEffect(() => {
     const fetchPlaces = async () => {
       try {
-        // ✅ Use API_BASE constant for dynamic endpoint
         const responseData = await sendRequest(
           `${API_BASE}/places/user/${userId}`,
         );

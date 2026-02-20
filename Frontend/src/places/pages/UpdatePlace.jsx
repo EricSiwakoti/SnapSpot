@@ -11,7 +11,6 @@ import {
 } from "../../shared/util/Validators";
 import { useForm } from "../../shared/hooks/form-hook";
 import { AuthContext } from "../../shared/context/auth-context";
-// ✅ Import API_BASE along with the hook
 import { useHttpClient, API_BASE } from "../../shared/hooks/http-hook";
 import "./PlaceForm.css";
 
@@ -39,7 +38,6 @@ const UpdatePlace = () => {
   useEffect(() => {
     const fetchPlace = async () => {
       try {
-        // ✅ Use API_BASE for GET request
         const responseData = await sendRequest(`${API_BASE}/places/${placeId}`);
         setLoadedPlace(responseData.place);
         setFormData(
@@ -65,7 +63,6 @@ const UpdatePlace = () => {
   const placeUpdateSubmitHandler = async (event) => {
     event.preventDefault();
     try {
-      // ✅ Use API_BASE for PATCH request
       await sendRequest(
         `${API_BASE}/places/${placeId}`,
         "PATCH",

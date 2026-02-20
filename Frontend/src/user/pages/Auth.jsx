@@ -1,4 +1,5 @@
 import { useState, useContext } from "react";
+import { toast } from "react-toastify";
 import Card from "../../shared/components/UIElements/Card";
 import Input from "../../shared/components/FormElements/Input";
 import Button from "../../shared/components/FormElements/Button";
@@ -12,7 +13,6 @@ import {
 } from "../../shared/util/Validators";
 import { useForm } from "../../shared/hooks/form-hook";
 import { AuthContext } from "../../shared/context/auth-context";
-// ✅ Import API_BASE along with the hook
 import { useHttpClient, API_BASE } from "../../shared/hooks/http-hook";
 import "./Auth.css";
 
@@ -69,7 +69,6 @@ const Auth = () => {
 
     if (isLoginMode) {
       try {
-        // ✅ Use API_BASE for login endpoint
         const responseData = await sendRequest(
           `${API_BASE}/users/login`,
           "POST",
@@ -82,6 +81,7 @@ const Auth = () => {
           },
         );
         auth.login(responseData.userId, responseData.token);
+        toast.success("Login successful!");
       } catch (err) {
         console.error("Error during login", err);
       }
@@ -92,14 +92,13 @@ const Auth = () => {
         formData.append("name", formState.inputs.name.value);
         formData.append("password", formState.inputs.password.value);
         formData.append("image", formState.inputs.image.value);
-        // ✅ Use API_BASE for signup endpoint
         const responseData = await sendRequest(
           `${API_BASE}/users/signup`,
           "POST",
           formData,
-          // ✅ No Content-Type header for FormData - browser handles it
         );
         auth.login(responseData.userId, responseData.token);
+        toast.success("Account created successfully!");
       } catch (err) {
         console.error("Error during signup", err);
       }

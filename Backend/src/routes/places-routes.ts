@@ -6,6 +6,7 @@ import authMiddleware from "../middleware/check-auth";
 
 const router = express.Router();
 
+router.get("/", placesControllers.getPlaces);
 router.get("/:pid", placesControllers.getPlaceById);
 router.get("/user/:uid", placesControllers.getPlaceByUserId);
 router.use(authMiddleware);
@@ -18,13 +19,13 @@ router.post(
     check("description").isLength({ min: 5 }),
     check("address").not().isEmpty(),
   ],
-  placesControllers.createPlace
+  placesControllers.createPlace,
 );
 
 router.patch(
   "/:pid",
   [check("title").not().isEmpty(), check("description").isLength({ min: 5 })],
-  placesControllers.updatePlace
+  placesControllers.updatePlace,
 );
 
 router.delete("/:pid", placesControllers.deletePlace);

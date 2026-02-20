@@ -3,6 +3,7 @@ import Map from "ol/Map.js";
 import OSM from "ol/source/OSM.js";
 import TileLayer from "ol/layer/Tile.js";
 import View from "ol/View.js";
+import { fromLonLat } from "ol/proj.js";
 import "./Map.css";
 
 const ViewMap = (props) => {
@@ -10,6 +11,8 @@ const ViewMap = (props) => {
   const { center, zoom } = props;
 
   useEffect(() => {
+    const transformedCenter = fromLonLat([center.lng, center.lat]);
+
     const map = new Map({
       target: mapRef.current.id,
       layers: [
@@ -18,7 +21,7 @@ const ViewMap = (props) => {
         }),
       ],
       view: new View({
-        center: window.ol.proj.fromLonLat([center.lng, center.lat]),
+        center: transformedCenter,
         zoom: zoom,
       }),
     });
