@@ -1,7 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
-import bodyParser from "body-parser";
 import mongoose from "mongoose";
-import fs from "fs";
 import placesRoutes from "./routes/places-routes";
 import usersRoutes from "./routes/users-routes";
 import searchRoutes from "./routes/search-routes";
@@ -10,9 +8,11 @@ import dotenv from "dotenv";
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import multer from "multer";
 
 interface CustomError extends Error {
   statusCode?: number;
+  code?: string | number;
 }
 
 dotenv.config();
@@ -21,6 +21,12 @@ const PORT: string | number = process.env.PORT ?? 5000;
 const MONGO_URI: string | undefined = process.env.MONGO_URI ?? "";
 
 app.use(helmet());
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    credentials: true,
+  }),
+);
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -28,9 +34,7 @@ const limiter = rateLimit({
   message: "Too many requests from this IP, please try again later.",
 });
 app.use(limiter);
-
-app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 
 app.use("/api/places", placesRoutes);
 app.use("/api/users", usersRoutes);
@@ -43,17 +47,28 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 app.use(
   (error: CustomError, req: Request, res: Response, next: NextFunction) => {
-    if (req.file) {
-      fs.unlink(req.file.path, (err) => {
-        console.log("Error deleting file", err);
-      });
+    // Handle Multer Errors specifically
+    if (error instanceof multer.MulterError) {
+      if (error.code === "LIMIT_FILE_SIZE") {
+        return res
+          .status(400)
+          .json({ message: "File size too large. Max 5MB allowed." });
+      }
+      return res.status(400).json({ message: "File upload error." });
     }
+
     if (res.headersSent) {
       return next(error);
     }
-    res
-      .status(error.statusCode ?? 500)
-      .json({ message: error.message || "An unknown error occurred!" });
+
+    // In production, hide detailed error messages for 500 errors
+    const isProd = process.env.NODE_ENV === "production";
+    res.status(error.statusCode ?? 500).json({
+      message:
+        isProd && error.statusCode === 500
+          ? "An unknown error occurred!"
+          : error.message || "An unknown error occurred!",
+    });
   },
 );
 

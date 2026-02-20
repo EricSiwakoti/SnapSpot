@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import HttpError from "../models/http-error";
-import fs from "fs";
 import { validationResult } from "express-validator";
+import { v2 as cloudinary } from "cloudinary";
 import getCoordsForAddress from "../util/location";
 import mongoose from "mongoose";
 import Place from "../models/place";
@@ -212,7 +212,7 @@ const deletePlace = async (req: Request, res: Response, next: NextFunction) => {
     );
   }
 
-  const imagePath = place.image;
+  const imageUrl = place.image;
 
   try {
     const sess = await mongoose.startSession();
@@ -235,9 +235,22 @@ const deletePlace = async (req: Request, res: Response, next: NextFunction) => {
     );
   }
 
-  fs.unlink(imagePath, (err) => {
-    console.log(err);
-  });
+  // Delete from Cloudinary using Public ID extracted from URL
+  if (imageUrl) {
+    try {
+      // Extract public_id from Cloudinary URL
+      const urlParts = imageUrl.split("/");
+      const uploadIndex = urlParts.indexOf("upload");
+      if (uploadIndex !== -1) {
+        const publicIdWithExt = urlParts.slice(uploadIndex + 2).join("/");
+        const publicId = publicIdWithExt.split(".")[0];
+
+        await cloudinary.uploader.destroy(publicId);
+      }
+    } catch (err) {
+      console.error("Cloudinary deletion failed:", err);
+    }
+  }
 
   res.status(200).json({ message: "Deleted place." });
 };
