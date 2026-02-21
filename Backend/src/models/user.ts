@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import uniqueValidator from "mongoose-unique-validator";
 
 interface IUser {
   name: string;
@@ -18,8 +17,6 @@ const userSchema = new mongoose.Schema<IUser>({
     { type: mongoose.Schema.Types.ObjectId, required: true, ref: "Place" },
   ],
 });
-
-userSchema.plugin(uniqueValidator);
 
 const User = mongoose.model<IUser>("User", userSchema);
 

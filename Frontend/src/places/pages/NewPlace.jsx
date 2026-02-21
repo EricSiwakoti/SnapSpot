@@ -49,11 +49,12 @@ const NewPlace = () => {
       formData.append("title", formState.inputs.title.value);
       formData.append("description", formState.inputs.description.value);
       formData.append("address", formState.inputs.address.value);
-      formData.append("creator", auth.userId);
+      // Removed redundant line - backend uses JWT token for creator ID
+      // formData.append("creator", auth.userId);
       formData.append("image", formState.inputs.image.value);
 
       await sendRequest(`${API_BASE}/places`, "POST", formData, {
-        Authorization: "Bearer " + auth.token,
+        // Authorization: "Bearer " + auth.token,
       });
       toast.success("Place created successfully!");
       navigate("/");

@@ -80,7 +80,7 @@ const Auth = () => {
             "Content-Type": "application/json",
           },
         );
-        auth.login(responseData.userId, responseData.token);
+        auth.login(responseData.userId);
         toast.success("Login successful!");
       } catch (err) {
         console.error("Error during login", err);
@@ -97,7 +97,7 @@ const Auth = () => {
           "POST",
           formData,
         );
-        auth.login(responseData.userId, responseData.token);
+        auth.login(responseData.userId);
         toast.success("Account created successfully!");
       } catch (err) {
         console.error("Error during signup", err);

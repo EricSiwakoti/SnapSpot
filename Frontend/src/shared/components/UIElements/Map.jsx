@@ -8,25 +8,41 @@ import "./Map.css";
 
 const ViewMap = (props) => {
   const mapRef = useRef();
+  const mapInstanceRef = useRef(null);
   const { center, zoom } = props;
 
   useEffect(() => {
-    const transformedCenter = fromLonLat([center.lng, center.lat]);
-
-    const map = new Map({
-      target: mapRef.current.id,
-      layers: [
-        new TileLayer({
-          source: new OSM(),
+    // Initialize the map only once when the component mounts
+    if (!mapInstanceRef.current && mapRef.current) {
+      const transformedCenter = fromLonLat([center.lng, center.lat]);
+      mapInstanceRef.current = new Map({
+        target: mapRef.current, // Pass DOM element directly
+        layers: [
+          new TileLayer({
+            source: new OSM(),
+          }),
+        ],
+        view: new View({
+          center: transformedCenter,
+          zoom: zoom,
         }),
-      ],
-      view: new View({
-        center: transformedCenter,
-        zoom: zoom,
-      }),
-    });
+      });
+    }
 
-    mapRef.current = map;
+    // Update the map view when center or zoom changes
+    if (mapInstanceRef.current && center) {
+      const transformedCenter = fromLonLat([center.lng, center.lat]);
+      mapInstanceRef.current.getView().setCenter(transformedCenter);
+      mapInstanceRef.current.getView().setZoom(zoom);
+    }
+
+    // Cleanup function to dispose of the map instance when the component unmounts
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.setTarget(null);
+        mapInstanceRef.current = null;
+      }
+    };
   }, [center, zoom]);
 
   return (
@@ -34,7 +50,6 @@ const ViewMap = (props) => {
       ref={mapRef}
       className={`map ${props.className}`}
       style={props.style}
-      id="map"
     ></div>
   );
 };

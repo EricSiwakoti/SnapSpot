@@ -9,6 +9,7 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import multer from "multer";
+import cookieParser from "cookie-parser";
 
 interface CustomError extends Error {
   statusCode?: number;
@@ -21,6 +22,7 @@ const PORT: string | number = process.env.PORT ?? 5000;
 const MONGO_URI: string | undefined = process.env.MONGO_URI ?? "";
 
 app.use(helmet());
+app.use(cookieParser());
 app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173",

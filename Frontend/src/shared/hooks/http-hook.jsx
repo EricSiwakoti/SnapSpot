@@ -20,6 +20,7 @@ export const useHttpClient = () => {
           body,
           headers,
           signal: httpAbortCtrl.signal,
+          credentials: "include",
         });
 
         const responseData = await response.json();
@@ -35,8 +36,9 @@ export const useHttpClient = () => {
         setIsLoading(false);
         return responseData;
       } catch (err) {
-        setError(err.message);
-        toast.error(err.message);
+        const errorMessage = err.message || "An unknown error occurred.";
+        setError(errorMessage);
+        toast.error(errorMessage);
         setIsLoading(false);
         throw err;
       }

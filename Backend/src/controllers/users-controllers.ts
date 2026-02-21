@@ -11,7 +11,7 @@ const getUsers = async (req: Request, res: Response, next: NextFunction) => {
     users = await User.find({}, "-password");
   } catch (err) {
     return next(
-      new HttpError("Fetching users failed, please try again later.", 500)
+      new HttpError("Fetching users failed, please try again later.", 500),
     );
   }
   res.json({ users: users.map((user) => user.toObject({ getters: true })) });
@@ -29,13 +29,13 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
     existingUser = await User.findOne({ email: email });
   } catch (err) {
     return next(
-      new HttpError("Signing up failed, please try again later.", 500)
+      new HttpError("Signing up failed, please try again later.", 500),
     );
   }
 
   if (existingUser) {
     return next(
-      new HttpError("User exists already, please login instead.", 422)
+      new HttpError("User exists already, please login instead.", 422),
     );
   }
 
@@ -58,7 +58,7 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
     await createdUser.save();
   } catch (err) {
     return next(
-      new HttpError("Signing up failed, please try again later.", 500)
+      new HttpError("Signing up failed, please try again later.", 500),
     );
   }
 
@@ -67,17 +67,24 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
     token = jwt.sign(
       { userId: createdUser.id, email: createdUser.email },
       process.env.JWT_KEY as string,
-      { expiresIn: "1h" }
+      { expiresIn: "1h" },
     );
   } catch (err) {
     return next(
-      new HttpError("Signing up failed, please try again later.", 500)
+      new HttpError("Signing up failed, please try again later.", 500),
     );
   }
 
+  res.cookie("token", token, {
+    httpOnly: true,
+    maxAge: 3600000, // 1 hour
+    secure: process.env.NODE_ENV === "production", // Secure only in production
+    sameSite: "strict",
+  });
+
   res
     .status(201)
-    .json({ user: createdUser.id, email: createdUser.email, token: token });
+    .json({ userId: createdUser.id, email: createdUser.email, token: token });
 };
 
 const login = async (req: Request, res: Response, next: NextFunction) => {
@@ -88,13 +95,13 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     identifiedUser = await User.findOne({ email: email });
   } catch (err) {
     return next(
-      new HttpError("Logging in failed, please try again later.", 500)
+      new HttpError("Logging in failed, please try again later.", 500),
     );
   }
 
   if (!identifiedUser) {
     return next(
-      new HttpError("Invalid credentials, could not log you in.", 403)
+      new HttpError("Invalid credentials, could not log you in.", 403),
     );
   }
 
@@ -105,14 +112,14 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     return next(
       new HttpError(
         "Could not log you in, please check your credentials and try again.",
-        500
-      )
+        500,
+      ),
     );
   }
 
   if (!isValidPassword) {
     return next(
-      new HttpError("Invalid credentials, could not log you in.", 403)
+      new HttpError("Invalid credentials, could not log you in.", 403),
     );
   }
 
@@ -121,13 +128,20 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     token = jwt.sign(
       { userId: identifiedUser.id, email: identifiedUser.email },
       process.env.JWT_KEY as string,
-      { expiresIn: "1h" }
+      { expiresIn: "1h" },
     );
   } catch (err) {
     return next(
-      new HttpError("Logging in failed, please try again later.", 500)
+      new HttpError("Logging in failed, please try again later.", 500),
     );
   }
+
+  res.cookie("token", token, {
+    httpOnly: true,
+    maxAge: 3600000, // 1 hour
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
 
   res.json({
     userId: identifiedUser.id,
@@ -136,4 +150,9 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
   });
 };
 
-export { getUsers, signup, login };
+const logout = async (req: Request, res: Response, next: NextFunction) => {
+  res.clearCookie("token");
+  res.json({ message: "Logged out successfully" });
+};
+
+export { getUsers, signup, login, logout };

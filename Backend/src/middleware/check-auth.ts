@@ -9,20 +9,21 @@ interface AuthRequest extends Request {
 const authMiddleware = (
   req: AuthRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   if (req.method === "OPTIONS") {
     return next();
   }
   try {
-    const token = req.headers.authorization?.split(" ")[1]; // Authorization: 'Bearer TOKEN'
+    const token =
+      req.cookies?.token || req.headers.authorization?.split(" ")[1];
     if (!token) {
       throw new Error("Authentication failed!");
     }
 
     const decodedToken = jwt.verify(
       token,
-      process.env.JWT_KEY as string
+      process.env.JWT_KEY as string,
     ) as jwt.JwtPayload;
     req.userData = { userId: decodedToken.userId as string };
     next();

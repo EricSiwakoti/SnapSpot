@@ -92,12 +92,6 @@ cd Frontend
 npm install
 ```
 
-Create a `.env` file in the `Frontend` root:
-
-```env
-VITE_API_BASE=http://localhost:5000/api
-```
-
 **Run the Frontend:**
 
 ```bash
