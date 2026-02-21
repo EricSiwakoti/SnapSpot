@@ -2,36 +2,43 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useHttpClient, API_BASE } from "./http-hook";
 import { toast } from "react-toastify";
 
-const logoutTimer = useRef();
-
 export const useAuth = () => {
   const [token, setToken] = useState(false);
-  const [tokenExpirationDate, setTokenExpirationDate] = useState();
+  const [tokenExpirationDate, setTokenExpirationDate] = useState(null);
   const [userId, setUserId] = useState(false);
   const { sendRequest } = useHttpClient();
+  const logoutTimer = useRef(null);
 
   const login = useCallback((uid, expirationDate) => {
-    setToken(true); // Token existence is implied by HttpOnly cookie
+    setToken(true); // Auth state is based on HttpOnly cookie presence
     setUserId(uid);
-    const tokenExpirationDate =
+
+    const expiration =
       expirationDate || new Date(new Date().getTime() + 1000 * 60 * 60);
-    setTokenExpirationDate(tokenExpirationDate);
-    // Only store userId (non-sensitive), NOT the token
+
+    setTokenExpirationDate(expiration);
+
+    // Store only non-sensitive user data
     localStorage.setItem(
       "userData",
       JSON.stringify({
         userId: uid,
-        expiration: tokenExpirationDate.toISOString(),
+        expiration: expiration.toISOString(),
       }),
     );
   }, []);
 
   const logout = useCallback(async () => {
-    setToken(null);
+    setToken(false);
     setTokenExpirationDate(null);
     setUserId(null);
     localStorage.removeItem("userData");
-    // Call backend logout to clear HttpOnly cookie
+
+    if (logoutTimer.current) {
+      clearTimeout(logoutTimer.current);
+      logoutTimer.current = null;
+    }
+
     try {
       await sendRequest(`${API_BASE}/users/logout`, "POST");
       toast.success("Logged out successfully!");
@@ -44,22 +51,46 @@ export const useAuth = () => {
     if (token && tokenExpirationDate) {
       const remainingTime =
         tokenExpirationDate.getTime() - new Date().getTime();
-      logoutTimer = setTimeout(logout, remainingTime);
-    } else {
-      clearTimeout(logoutTimer);
+
+      if (remainingTime <= 0) {
+        logout();
+        return;
+      }
+
+      if (logoutTimer.current) {
+        clearTimeout(logoutTimer.current);
+      }
+
+      logoutTimer.current = setTimeout(logout, remainingTime);
+    } else if (logoutTimer.current) {
+      clearTimeout(logoutTimer.current);
+      logoutTimer.current = null;
     }
-  }, [token, logout, tokenExpirationDate]);
+  }, [token, tokenExpirationDate, logout]);
 
   useEffect(() => {
-    const storedData = JSON.parse(localStorage.getItem("userData"));
-    if (
-      storedData &&
-      storedData.userId &&
-      new Date(storedData.expiration) > new Date()
-    ) {
-      login(storedData.userId, new Date(storedData.expiration));
+    try {
+      const storedData = JSON.parse(localStorage.getItem("userData"));
+
+      if (
+        storedData?.userId &&
+        storedData?.expiration &&
+        new Date(storedData.expiration) > new Date()
+      ) {
+        login(storedData.userId, new Date(storedData.expiration));
+      }
+    } catch (err) {
+      localStorage.removeItem("userData");
     }
   }, [login]);
+
+  useEffect(() => {
+    return () => {
+      if (logoutTimer.current) {
+        clearTimeout(logoutTimer.current);
+      }
+    };
+  }, []);
 
   return { token, login, logout, userId };
 };

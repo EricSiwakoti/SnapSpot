@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import PlaceList from "../../places/components/PlaceList";
 import UsersList from "../../user/components/UsersList";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
@@ -22,23 +22,26 @@ const AllPlaces = () => {
   );
 
   // Fetch Search Results
-  const fetchSearchResults = async (searchTerm = "", type = "all") => {
-    try {
-      let url = `${API_BASE}/search?type=${type}`;
-      if (searchTerm) {
-        url += `&query=${encodeURIComponent(searchTerm)}`;
+  const fetchSearchResults = useCallback(
+    async (searchTerm = "", type = "all") => {
+      try {
+        let url = `${API_BASE}/search?type=${type}`;
+        if (searchTerm) {
+          url += `&query=${encodeURIComponent(searchTerm)}`;
+        }
+        const responseData = await sendRequest(url);
+        setSearchResults(responseData.results);
+      } catch (err) {
+        // Error handled in http-hook
       }
-      const responseData = await sendRequest(url);
-      setSearchResults(responseData.results);
-    } catch (err) {
-      // Error handled in http-hook
-    }
-  };
+    },
+    [sendRequest],
+  );
 
   // Initial Load: Fetch all places for home feed
   useEffect(() => {
     fetchSearchResults("", "places");
-  }, [sendRequest]);
+  }, [fetchSearchResults]);
 
   // Search Submit Handler
   const searchSubmitHandler = (event) => {
@@ -65,7 +68,8 @@ const AllPlaces = () => {
   return (
     <>
       <ErrorModal error={error} onClear={clearError} />
-      /* Search Bar */
+
+      {/* Search Bar */}
       <form
         onSubmit={searchSubmitHandler}
         style={{
@@ -96,7 +100,8 @@ const AllPlaces = () => {
           {isLoading ? "Searching..." : "Search"}
         </button>
       </form>
-      /* Search Type Tabs */
+
+      {/* Search Type Tabs */}
       <div
         style={{
           display: "flex",
@@ -106,6 +111,7 @@ const AllPlaces = () => {
         }}
       >
         <button
+          type="button"
           className={`button ${activeTab === "all" ? "" : "button--inverse"}`}
           onClick={() => handleTabChange("all")}
           disabled={isLoading}
@@ -113,6 +119,7 @@ const AllPlaces = () => {
           All
         </button>
         <button
+          type="button"
           className={`button ${activeTab === "places" ? "" : "button--inverse"}`}
           onClick={() => handleTabChange("places")}
           disabled={isLoading}
@@ -120,6 +127,7 @@ const AllPlaces = () => {
           Places
         </button>
         <button
+          type="button"
           className={`button ${activeTab === "users" ? "" : "button--inverse"}`}
           onClick={() => handleTabChange("users")}
           disabled={isLoading}
@@ -127,14 +135,16 @@ const AllPlaces = () => {
           Users
         </button>
       </div>
+
       {isLoading && (
         <div className="center">
           <LoadingSpinner />
         </div>
       )}
+
       {!isLoading && (
         <>
-          /* Show Places */
+          {/* Show Places */}
           {(activeTab === "all" || activeTab === "places") && (
             <>
               {searchResults.places && searchResults.places.length > 0 && (
@@ -152,7 +162,8 @@ const AllPlaces = () => {
               )}
             </>
           )}
-          /* Show Users */
+
+          {/* Show Users */}
           {(activeTab === "all" || activeTab === "users") && (
             <>
               {searchResults.users && searchResults.users.length > 0 && (
@@ -167,7 +178,8 @@ const AllPlaces = () => {
               )}
             </>
           )}
-          /* Empty State for All */
+
+          {/* Empty State for All */}
           {activeTab === "all" &&
             searchResults.places?.length === 0 &&
             searchResults.users?.length === 0 &&
@@ -175,7 +187,8 @@ const AllPlaces = () => {
               <div className="center">
                 <Card className="place-list__padding">
                   <h2>
-                    No results found for "{formState.inputs.search.value}".
+                    No results found for &quot;{formState.inputs.search.value}
+                    &quot;.
                   </h2>
                 </Card>
               </div>

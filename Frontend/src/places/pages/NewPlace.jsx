@@ -1,4 +1,3 @@
-import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Input from "../../shared/components/FormElements/Input";
@@ -11,12 +10,10 @@ import {
   VALIDATOR_MINLENGTH,
 } from "../../shared/util/Validators";
 import { useForm } from "../../shared/hooks/form-hook";
-import { AuthContext } from "../../shared/context/auth-context";
 import { useHttpClient, API_BASE } from "../../shared/hooks/http-hook";
 import "./PlaceForm.css";
 
 const NewPlace = () => {
-  const auth = useContext(AuthContext);
   const { isLoading, error, sendRequest, clearError } = useHttpClient();
   const [formState, inputHandler] = useForm(
     {

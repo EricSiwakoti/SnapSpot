@@ -1,7 +1,7 @@
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
-import multer, { File } from "multer";
-import { Request } from "express";
+import multer from "multer";
+import { Request, Response, NextFunction, RequestHandler } from "express";
 
 // Configure Cloudinary
 cloudinary.config({
@@ -12,18 +12,18 @@ cloudinary.config({
 
 // Configure Storage
 const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: "SnapSpot",
-    allowed_formats: ["jpg", "png", "jpeg"],
-    transformation: [{ width: 500, height: 500, crop: "limit" }],
-  },
-  // Generate a unique public ID for each uploaded file
-  public_id: (req: Request, file: File) => {
+  cloudinary,
+  params: async (req: Request, file: Express.Multer.File) => {
     const fileName = file.originalname
       .split(".")[0]
       .replace(/[^a-zA-Z0-9]/g, "-");
-    return `snapspot-${Date.now()}-${fileName}`;
+
+    return {
+      folder: "SnapSpot",
+      allowed_formats: ["jpg", "png", "jpeg"],
+      transformation: [{ width: 500, height: 500, crop: "limit" }],
+      public_id: `snapspot-${Date.now()}-${fileName}`,
+    };
   },
 });
 
@@ -34,7 +34,11 @@ const fileUpload = multer({
     fileSize: 5 * 1024 * 1024,
   },
   // Only accept specific MIME types
-  fileFilter: (req: Request, file: File, cb: multer.FileFilterCallback) => {
+  fileFilter: (
+    req: Request,
+    file: Express.Multer.File,
+    cb: multer.FileFilterCallback,
+  ) => {
     if (file.mimetype.startsWith("image/")) {
       cb(null, true);
     } else {
@@ -43,15 +47,13 @@ const fileUpload = multer({
   },
 });
 
-export const requireImage = (
+export const requireImage: RequestHandler = (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   if (!req.file) {
-    return next(
-      new HttpError("No image provided. Please upload an image.", 400),
-    );
+    return res.status(422).json({ message: "Image file is required." });
   }
   next();
 };
