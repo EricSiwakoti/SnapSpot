@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import HttpError from "../models/http-error";
 
-interface AuthRequest extends Request {
+export interface AuthRequest extends Request {
   userData?: { userId: string };
 }
 

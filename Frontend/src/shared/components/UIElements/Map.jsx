@@ -4,6 +4,7 @@ import OSM from "ol/source/OSM.js";
 import TileLayer from "ol/layer/Tile.js";
 import View from "ol/View.js";
 import { fromLonLat } from "ol/proj.js";
+import "ol/ol.css";
 import "./Map.css";
 
 const ViewMap = (props) => {

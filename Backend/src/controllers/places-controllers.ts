@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import authMiddleware, { AuthRequest } from "../middleware/check-auth";
 import HttpError from "../models/http-error";
 import { validationResult } from "express-validator";
 import { v2 as cloudinary } from "cloudinary";
@@ -83,7 +84,11 @@ const getPlaceByUserId = async (
   });
 };
 
-const createPlace = async (req: Request, res: Response, next: NextFunction) => {
+const createPlace = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next(
@@ -136,7 +141,11 @@ const createPlace = async (req: Request, res: Response, next: NextFunction) => {
   res.status(201).json({ place: createdPlace });
 };
 
-const updatePlace = async (req: Request, res: Response, next: NextFunction) => {
+const updatePlace = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next(
@@ -184,7 +193,11 @@ const updatePlace = async (req: Request, res: Response, next: NextFunction) => {
   res.status(200).json({ place: place.toObject({ getters: true }) });
 };
 
-const deletePlace = async (req: Request, res: Response, next: NextFunction) => {
+const deletePlace = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   const placeId = req.params.pid;
 
   let place;
