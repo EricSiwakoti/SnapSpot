@@ -146,7 +146,6 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
   res.json({
     userId: identifiedUser.id,
     email: identifiedUser.email,
-    token: token,
   });
 };
 

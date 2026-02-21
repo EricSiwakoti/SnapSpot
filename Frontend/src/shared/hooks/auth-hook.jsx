@@ -1,8 +1,8 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useHttpClient, API_BASE } from "./http-hook";
 import { toast } from "react-toastify";
 
-let logoutTimer;
+const logoutTimer = useRef();
 
 export const useAuth = () => {
   const [token, setToken] = useState(false);
